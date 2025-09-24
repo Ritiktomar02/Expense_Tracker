@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input.jsx";
 import { Link } from "react-router-dom";
 import { validateEmail } from "../../utils/helper.js";
+import { API_PATHS } from "../../utils/apiPaths.js";
+import axiosinstance from "../../utils/axiosInstance.js";
+import UserContext from "../../context/UserContext.jsx";
 
 const Login = () => {
   const [email, setemail] = useState("");
@@ -11,9 +14,12 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const { updateUser} = useContext(UserContext);
+
+
   const handlelogin = async (e) => {
     e.preventDefault();
-   
+
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
       return;
@@ -23,13 +29,33 @@ const Login = () => {
       setError("Please enter a password.");
       return;
     }
-    
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
 
     setError("");
+
+    try {
+      const res = await axiosinstance.post(API_PATHS.AUTH.LOGIN, {
+        email: email,
+        password: password,
+      });
+      const { token, user } = res.data;
+    
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user) 
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error has occured. Please try again");
+      }
+    }
   };
 
   return (
@@ -56,23 +82,18 @@ const Login = () => {
             type="password"
           />
 
-          {error && (
-              <p className="text-red-500 text-xs pb-2.5">{error}</p>
-            )}
+          {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
 
           <button className="btn-primary" type="submit">
-              Login
-            </button>
+            Login
+          </button>
 
-            <p className="text-[13px] text-slate-800 mt-3">
-              Don't have a account?{" "}
-              <Link
-                to={"/signUp"}
-                className="font-medium text-primary underline"
-              >
-                SignUp
-              </Link>
-            </p>
+          <p className="text-[13px] text-slate-800 mt-3">
+            Don't have a account?{" "}
+            <Link to={"/signUp"} className="font-medium text-primary underline">
+              SignUp
+            </Link>
+          </p>
         </form>
       </div>
     </AuthLayout>

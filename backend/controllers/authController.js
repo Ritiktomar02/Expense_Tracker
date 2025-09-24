@@ -9,7 +9,7 @@ const generateToken = (id) => {
 exports.registerUser = async (req, res) => {
   try {
     const { fullname, email, password, profileImageUrl } = req.body;
-
+    
 
     if (!fullname || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
@@ -21,7 +21,6 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    // 3. Create user
     const user = await User.create({
       fullname,
       email,
@@ -29,11 +28,9 @@ exports.registerUser = async (req, res) => {
       profileImageUrl: profileImageUrl || null,
     });
 
-    res.status(201).json({
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      profileImageUrl: user.profileImageUrl,
+    res.status(200).json({
+      id:user._id,
+      user,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -57,11 +54,9 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    res.json({
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      profileImageUrl: user.profileImageUrl,
+    res.status(200).json({
+      id:user._id,
+      user,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -77,7 +72,7 @@ exports.getInfoUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.status(200).json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

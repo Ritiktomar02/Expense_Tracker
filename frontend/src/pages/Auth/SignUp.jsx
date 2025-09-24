@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { useNavigate, Link } from "react-router-dom";
 import Input from "../../components/Inputs/Input.jsx";
 import { validateEmail } from "../../utils/helper.js";
 import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector.jsx";
+import uploadImage from "../../utils/uploadImage.js";
+import { API_PATHS } from "../../utils/apiPaths.js";
+import axiosinstance from "../../utils/axiosInstance.js";
+import { compressImage } from "../../utils/compressImage.js";
+import UserContext from "../../context/UserContext.jsx";
 
 const SignUp = () => {
   const [profilepic, setprofilepic] = useState("");
@@ -13,10 +18,10 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+    const { updateUser} = useContext(UserContext);
+
   const handlesignup = async (e) => {
     e.preventDefault();
-
-    let profileimageurl = "";
 
     if (!fullname) {
       setError("Please enter your name.");
@@ -33,13 +38,38 @@ const SignUp = () => {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
     setError("");
 
+    try {
+
+      let profileImageUrl = "";
+      if (profilepic) {
+        const compressedFile = await compressImage(profilepic);
+        const uploadRes = await uploadImage(compressedFile);
+        profileImageUrl = uploadRes;
+      }
+
+      const res = await axiosinstance.post(API_PATHS.AUTH.REGISTER, {
+        fullname,
+        email,
+        password,
+        profileImageUrl, 
+      });
+
+      const { token, user } = res.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user)
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    }
   };
 
   return (
