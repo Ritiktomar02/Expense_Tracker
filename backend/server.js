@@ -13,7 +13,10 @@ const dashboardRoute=require('./routes/dashboardRoute')
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "*",
+    origin: [
+			"http://localhost:5173",
+			"https://expense-trackerfrontend-eight.vercel.app",
+		],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
