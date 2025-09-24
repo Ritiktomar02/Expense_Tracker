@@ -5,17 +5,19 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-
 exports.registerUser = async (req, res) => {
   try {
+    console.log("Register route hit");
+    console.log("req.body:", req.body);
+    console.log("req.file:", req.file); 
+
     const { fullname, email, password, profileImageUrl } = req.body;
-    
+    console.log("Extracted fields:", fullname, email, profileImageUrl);
 
     if (!fullname || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
- 
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "Email already in use" });
@@ -29,7 +31,7 @@ exports.registerUser = async (req, res) => {
     });
 
     res.status(200).json({
-      id:user._id,
+      id: user._id,
       user,
       token: generateToken(user._id),
     });
@@ -43,7 +45,6 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-   
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
@@ -55,7 +56,7 @@ exports.loginUser = async (req, res) => {
     }
 
     res.status(200).json({
-      id:user._id,
+      id: user._id,
       user,
       token: generateToken(user._id),
     });
@@ -67,7 +68,6 @@ exports.loginUser = async (req, res) => {
 
 exports.getInfoUser = async (req, res) => {
   try {
- 
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });

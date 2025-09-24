@@ -18,7 +18,7 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-    const { updateUser} = useContext(UserContext);
+  const { updateUser } = useContext(UserContext);
 
   const handlesignup = async (e) => {
     e.preventDefault();
@@ -41,11 +41,13 @@ const SignUp = () => {
     setError("");
 
     try {
-
       let profileImageUrl = "";
       if (profilepic) {
+        console.log("Original file:", profilepic);
         const compressedFile = await compressImage(profilepic);
+        console.log("Compressed file:", compressedFile);
         const uploadRes = await uploadImage(compressedFile);
+        console.log("Upload returned URL:", uploadRes);
         profileImageUrl = uploadRes;
       }
 
@@ -53,14 +55,14 @@ const SignUp = () => {
         fullname,
         email,
         password,
-        profileImageUrl, 
+        profileImageUrl,
       });
 
       const { token, user } = res.data;
 
       if (token) {
         localStorage.setItem("token", token);
-        updateUser(user)
+        updateUser(user);
         navigate("/dashboard");
       }
     } catch (err) {

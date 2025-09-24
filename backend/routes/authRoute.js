@@ -21,9 +21,9 @@ router.post("/upload-image", upload.single("image"), (req, res) => {
     });
   }
 
-  const imageurl = `https://expense-tracker-backend-ml9d.onrender.com/uploads/${
-    req.file.filename
-  }`;
+  const imageurl = `https://expense-tracker-backend-ml9d.onrender.com/uploads/${req.file.filename}`;
+  console.log("Returning imageurl:", imageurl);
   res.status(200).json({ imageurl });
+
 });
 module.exports = router;
